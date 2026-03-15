@@ -1,0 +1,7 @@
+selenium
+undetected-chromedriver
+confluent-kafka
+pyspark
+requests
+python-dotenv
+pandas
