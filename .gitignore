@@ -1,14 +1,23 @@
 
 data/
-docker/storage/data_lake/
 
 
+docker/storage/data_lake/*
 !docker/storage/data_lake/.gitkeep
 
 
 venv/
+
+
 .env
 
 
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+
+
+*.log
+logs/
