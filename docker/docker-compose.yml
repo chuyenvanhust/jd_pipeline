@@ -92,7 +92,7 @@ services:
     environment:
       SPARK_NO_DAEMONIZE: "true"
       SPARK_WORKER_MEMORY: "2g"
-      SPARK_WORKER_CORES: "2"   # 2 cores → 2 task Ollama song song
+      SPARK_WORKER_CORES: "2" 
       SPARK_WORKER_OPTS: >-
         -Dspark.executor.heartbeatInterval=60s
         -Dspark.network.timeout=800s
