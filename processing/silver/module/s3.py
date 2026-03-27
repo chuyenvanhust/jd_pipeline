@@ -9,14 +9,7 @@ _B  = r'(?<![a-zA-Z0-9\u00C0-\u024F\u1E00-\u1EFF])'
 _BE = r'(?![a-zA-Z0-9\u00C0-\u024F\u1E00-\u1EFF])'
 
 def process(df: DataFrame, location_map: dict) -> DataFrame:
-    """
-    Chuẩn hoá cột location → city.
-
-    Sửa 2 lỗi:
-    1. Partial match: "hà" in "thành phố hà nội" → dùng regex lookaround thay vì `in`.
-    2. Priority: sắp xếp từ dài → ngắn để "thừa thiên huế" bắt trước "huế".
-    """
-
+   
     # ── Tiền xử lý: flatten + sort dài → ngắn + pre-compile ────────────────
     sorted_keywords = []
     for city, keywords in location_map.items():
