@@ -5,15 +5,7 @@ from pyspark.sql.types import FloatType
 import re
 
 def process(df: DataFrame) -> DataFrame:
-    """
-    Trích xuất số năm kinh nghiệm từ cột experience → years_of_experience (Float).
-
-    Sửa lỗi: regex r'(\d+)\s*(?:năm|year|yr|y)' bắt nhầm ký tự 'y' đơn lẻ
-    trong các từ như 'salary', 'today', 'they'.
-    Giải pháp: Thêm lookahead (?![a-zA-Z]) để đảm bảo 'y' là hậu tố đơn độc,
-    không phải một phần của từ khác. Các đơn vị dài hơn (year, yr, năm) không
-    bị ảnh hưởng nhưng vẫn thêm boundary cho nhất quán.
-    """
+    
 
     # Boundary để bắt đúng đơn vị, không bắt nhầm giữa chừng từ
     _UNIT_END = r'(?![a-zA-Z])'
