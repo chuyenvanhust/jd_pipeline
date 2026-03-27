@@ -9,15 +9,7 @@ _B  = r'(?<![a-zA-Z0-9\u00C0-\u024F\u1E00-\u1EFF])'
 _BE = r'(?![a-zA-Z0-9\u00C0-\u024F\u1E00-\u1EFF])'
 
 def process(df: DataFrame, level_map: dict) -> DataFrame:
-    """
-    Trích xuất cấp độ (level) từ title + experience.
-
-    Sửa lỗi: `if any(kw in text ...)` bắt nhầm chuỗi con:
-      - "intern" match trong "international"
-      - "lead"   match trong "leading", "uploaded"
-      - "senior" match trong "senior" OK, nhưng nhất quán dùng regex
-    Giải pháp: dùng regex với Unicode-aware lookaround.
-    """
+   
 
     # Thứ tự ưu tiên: Manager > Lead > Senior > Middle > Junior > Fresher > Intern
     PRIORITY = ["Manager", "Lead", "Senior", "Middle", "Junior", "Fresher", "Intern"]
