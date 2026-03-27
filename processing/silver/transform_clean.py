@@ -20,7 +20,7 @@ spark = SparkSession.builder \
 spark.sparkContext.setLogLevel("WARN")
 
 # ─────────────────────────────────────────
-# 2. SCHEMA — FIX: yeu_cau_ung_vien_html (vien, không phải viec)
+# 2. SCHEMA — FIX: yeu_cau_ung_vien_html
 # ─────────────────────────────────────────
 schema = StructType() \
     .add("job_id",                  StringType()) \
@@ -68,7 +68,7 @@ clean_html_udf = udf(clean_html_fn, StringType())
 
 # ─────────────────────────────────────────
 # 4. UDF: PARSE SALARY
-# Tỷ giá cứng — lưu salary_raw để recalculate nếu cần
+
 # ─────────────────────────────────────────
 USD_RATE = 0.026    # 1 USD = 26,000 VND = 0.026 triệu VND
 JPY_RATE = 0.000165 # 1 JPY = 165 VND   = 0.000165 triệu VND
@@ -167,7 +167,6 @@ parse_deadline_udf = udf(parse_deadline, DateType())
 
 # ─────────────────────────────────────────
 # 7. LOCATION — chỉ strip artifact TopCV
-# Normalize tên tỉnh giao LLM (File 3)
 # ─────────────────────────────────────────
 def strip_location(s: str) -> str:
     if not s:
@@ -281,18 +280,34 @@ NON_IT_TAGS = {
     "Giáo dục / Đào tạo", "Giáo viên Tin học",
     "Kinh doanh phần mềm", "Online Sales", "Telesales",
     "B2B", "B2G", "Marketing / Quảng cáo",
+    "Bán hàng / Kinh doanh", "Bất động sản",
+    "Tài chính / Ngân hàng", "Kế toán / Kiểm toán",
+    "Dịch vụ khách hàng", "Chăm sóc khách hàng",
+    "Y tế / Dược", "Chăm sóc sức khỏe",
+    "Sale" , "Business Development", "Phát triển kinh doanh",
+    "Nhân sự / Hành chính", "Nhân sự", "Hành chính văn phòng",
+    "Phiên dịch / Biên dịch", "Dịch thuật", "Biên phiên dịch",
+    "Sales" ,"Tiếp thị / Quảng cáo", "Marketing", "PR", "Truyền thông",
+
 }
 
-# Tags vùng xám → is_it_preliminary = "none" → LLM quyết
-# VD: "Ngân hàng", "Tài chính", "Kỹ sư lập trình PLC/SCADA"
-# Không cần liệt kê — chúng sẽ không match IT_TAGS lẫn NON_IT_TAGS
 
 def classify_it(tags: list) -> str:
     if not tags:
         return "none"
-    t = set(tags)
-    if t & IT_TAGS:     return "true"
-    if t & NON_IT_TAGS: return "false"
+    
+    # cache static trong function
+    if not hasattr(classify_it, "it_tags_lower"):
+        classify_it.it_tags_lower = {x.lower() for x in IT_TAGS}
+        classify_it.non_it_tags_lower = {x.lower() for x in NON_IT_TAGS}
+    
+    t = set(tag.strip().lower() for tag in tags if tag)
+    
+    if t & classify_it.non_it_tags_lower:
+        return "false"
+    if t & classify_it.it_tags_lower:
+        return "true"
+        
     return "none"
 
 classify_it_udf = udf(classify_it, StringType())
@@ -305,7 +320,7 @@ df = spark.read \
     .parquet("hdfs://namenode:9000/datalake/silver/topcv/stage_unique/")
 
 df = df.filter(col("job_id").isNotNull())
-print(f"📥 Đọc được {df.count()} jobs từ stage_unique")
+print(f" Đọc được {df.count()} jobs từ stage_unique")
 
 # ─────────────────────────────────────────
 # 11. CLEAN HTML → TEXT
@@ -396,7 +411,7 @@ it_true       = df.filter(col("is_it_preliminary") == "true").count()
 it_false      = df.filter(col("is_it_preliminary") == "false").count()
 it_none       = df.filter(col("is_it_preliminary") == "none").count()
 
-print(f"\n📊 DATA QUALITY REPORT — stage_clean")
+print(f"\n DATA QUALITY REPORT — stage_clean")
 print(f"   Tổng jobs              : {total}")
 print(f"   Không có nội dung JD   : {no_content} ({no_content/total:.1%})")
 print(f"   Salary không xác định  : {null_salary} ({null_salary/total:.1%})")
@@ -416,5 +431,5 @@ df.write \
     .mode("overwrite") \
     .parquet(CLEAN_PATH)
 
-print(f"\n✅ Xong! Ghi tại: {CLEAN_PATH}")
+print(f"\n Clean xong! Ghi tại: {CLEAN_PATH}")
 df.printSchema()
